@@ -75,7 +75,8 @@ def scrape(page_link):
         
         tier_list_dict = {}
         for c in tier_list:
-            tier_list_dict[c.name]= c
+            #tier_list_dict[c.name]= c
+            tier_list_dict[c.name]= {'win_rate':c.win_rate,'pick_rate':c.pick_rate,'name':c.name, 'str':str(c)}
             
         return tier_list_dict
     except Exception as err:
@@ -117,11 +118,11 @@ def run_scrape():
     
     full_dict = dict_union(heroes_dict,main_dict,items_dict)
     
-    file_name="model/card_dict.pkl"
+    file_name="card_dict.pkl"
     
     save_pickle(full_dict,file_name)
     print("Done, saved on: ",file_name)
-        
+
 if __name__ == "__main__":
     from bs4 import BeautifulSoup
     import requests

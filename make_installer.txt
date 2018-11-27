@@ -4,12 +4,13 @@ atualizar main.py com Interface_vX.ipynb
 
 
 D:
-cd D:\Google Drive\Jupyter\Artifact\Helper\pynsist
+cd D:\Artifact Helper\artifacthelper
 
 
+pynsist installer.cfg --no-makensis
 pynsist installer.cfg
 
-        
+
 cd D:\Google Drive\Jupyter\Artifact\Helper\pynsist\build\nsis\Python
 python.exe ../Artifact_Helper.launch.pyw
 

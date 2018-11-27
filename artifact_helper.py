@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from artibuff_scrape import Artibuff_Card
 from tier_list_scrape import read_tier_text, Tier_List_Card
 import os
+import sys
 import pickle
 import webbrowser
 import time
@@ -10,6 +11,13 @@ import numpy as np
 import tkinter as tk
 from PIL import Image, ImageTk
 from mss import mss
+
+path_root = os.path.dirname(sys.modules['__main__'].__file__)
+print('PATH:', path_root)
+
+def path(filename):
+    global path_root
+    return os.path.join(path_root, filename)
 
 def OpenUrl():
     webbrowser.open_new('https://github.com/eoakley/artifacthelper')
@@ -25,14 +33,11 @@ def load_pickle(file_name="card_dict.pkl"):
 
 executor = ThreadPoolExecutor(40)
 
-path_root = '.'
+stats = load_pickle(path('resources/card_dict.pkl'))
 
-stats = load_pickle(os.path.join(path_root, 'resources/card_dict.pkl'))
+tiers = read_tier_text(path('tier_list.txt'))
 
-tiers = read_tier_text(os.path.join(path_root, 'tier_list.txt'))
-
-#sp = ScreenProcessor(os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'model/cnn_v4.h5'), os.path.join(os.path.dirname(sys.modules['__main__'].__file__), 'model/label_to_name.pkl'))
-sp = ScreenProcessor(os.path.join(path_root, 'resources/cnn_v5.h5'), os.path.join(path_root, 'resources/label_to_name.pkl'))
+sp = ScreenProcessor(path('resources/cnn_v5.h5'), path('resources/label_to_name.pkl'))
 
 def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
@@ -129,7 +134,7 @@ def btnProcessScreen(ll, root):
                 continue
                 
             try:
-                wr = stats[card_name]
+                wr = stats[card_name]['str']
                 tier = tiers[card_name]
             except:
                 tier = ''
@@ -172,8 +177,8 @@ def swap_window(root, first_time=False):
         root.lift()
         root.overrideredirect(1) #Remove border
 
-        logo = ImageTk.PhotoImage(Image.open(os.path.join(path_root, 'resources/banner_1.png')))
-        btnImgScan = ImageTk.PhotoImage(Image.open(os.path.join(path_root, 'resources/btn_scan_1.png')))
+        logo = ImageTk.PhotoImage(Image.open(path('resources/banner_1.png')))
+        btnImgScan = ImageTk.PhotoImage(Image.open(path('resources/btn_scan_1.png')))
 
         lg = tk.Label(root, image=logo, borderwidth=0, relief="solid")
         lg.image = logo
@@ -213,8 +218,8 @@ def swap_window(root, first_time=False):
             #root.lower()
             pass
         
-        logo = ImageTk.PhotoImage(Image.open(os.path.join(path_root, 'resources/launcher_bg.png')))
-        btnImgScan = ImageTk.PhotoImage(Image.open(os.path.join(path_root, 'resources/btn_launch_overlay.png')))
+        logo = ImageTk.PhotoImage(Image.open(path('resources/launcher_bg.png')))
+        btnImgScan = ImageTk.PhotoImage(Image.open(path('resources/btn_launch_overlay.png')))
 
         lg = tk.Label(root, image=logo, borderwidth=0, relief="solid")
         lg.image = logo
@@ -235,11 +240,12 @@ def swap_window(root, first_time=False):
 
 def main():
     root = tk.Tk()
-    root.iconbitmap('favicon.ico')
+    root.iconbitmap(path('favicon.ico'))
     
     swap_window(root, first_time=True)
     
     root.mainloop()
-    
-#run
-main()
+
+if __name__ == "__main__":
+    #run
+    main()
