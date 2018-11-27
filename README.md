@@ -17,9 +17,18 @@ Download the latest [release](https://github.com/eoakley/artifacthelper/releases
 * **Only works on 1080p resolution for now**
 
 ## How to use
+
 After installation, simply launch the program via the start menu shortcut whenever you are going to draft.
 
 If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** mode).
+
+## How does it work
+
+We trained a simple neural network using [Keras](https://github.com/keras-team/keras) to classify cards based on its artwork.
+
+Using tier lists and historic data, we can show each card's win rate, pick rate and tier.
+
+We built an interface using [Tkinter](https://wiki.python.org/moin/TkInter) to create the overlay on top of the game.
 
 ## Building it yourself
 
