@@ -21,7 +21,7 @@ After installation, simply launch the program via the start menu shortcut whenev
 
 If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** mode).
 
-## Building yourself
+## Building it yourself
 
 It is also possible to build your own installation if you are an adventurer. Instructions on file "How to build.txt".
 
