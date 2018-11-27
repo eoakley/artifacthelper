@@ -1,0 +1,18 @@
+How to build:
+
+1. Install Python 3.6.5 (similar versions 3+ should work fine).
+
+2. Install Pynsist to build the installer.
+
+pip install pynsist
+or
+conda install pynsist
+
+
+3. Create the installer, this will create a "build" folder, the installer will be inside.
+
+pynsist installer.cfg
+
+
+4. Done!
+
