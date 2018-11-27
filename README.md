@@ -2,10 +2,12 @@
 
 A helper for Valve's Artifact draft mode that displays an overlay on individual cards showing stats gathered from [Artibuff](https://www.artibuff.com/), tier lists (default tier list is Hyped's from [DrawTwo](https://drawtwo.gg/hypeds-limited-tier-list)) and custom annotations.
 
+![Artifact Helper showing card tiers, win rates and pick rates](https://github.com/eoakley/artifacthelper/blob/master/screenshots/ScreenShot1.png)
+
 ## Getting Started
 
 Artifact Helper was built with Python 3.6.5 and is distributed via a self contained environment (built with [Pynsist](https://github.com/takluyver/pynsist)).
-Currently only works on Windows. And tested only with windows 10.
+Currently only works on Windows. And tested only with Windows 10.
 
 ### Prerequisites
 
@@ -17,14 +19,14 @@ Currently only works on Windows. And tested only with windows 10.
 
 ### Installing
 
-Download and run the installer, _____ file .
+Download and run the .exe installer from the [releases](https://github.com/eoakley/artifacthelper/releases).
 
-It is also possible to build your own installation if you are an adventurer.
+It is also possible to build your own installation if you are an adventurer. Instructions on file "How to build.txt".
 
 ## How to use
 After installation, simply launch the program via the start menu shortcut whenever you are going to draft.
 
-If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless windowed** mode).
+If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** mode).
 
 ## To do
 
@@ -37,6 +39,3 @@ If the program has properly loaded you will notice the Artifact Helper banner on
 
 * **[Eric Oakley](https://github.com/eoakley)** - *Initial work*
 * **[João P. Vasques](https://github.com/miojo)** - *Initial work*
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
