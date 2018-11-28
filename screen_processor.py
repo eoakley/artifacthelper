@@ -1,7 +1,6 @@
 import pickle
-from modelo_cnn import ModeloDeck, imgToFeatures, pathToFeatures
+from modelo_hash import NPModel, imgToFeatures
 import numpy as np
-from keras.models import load_model
 from mss import mss
 
 def numpy_flip(im):
@@ -11,28 +10,29 @@ def numpy_flip(im):
     return np.flip(frame[:, :, :3], 2)
 
 def robustCard(ss, top, bottom, left, right, md, verbose=False):
-    sm = 0
-    best_pred = 'Nope'
-    a,b = 0,1
+    sm = 999999
+    best_pred = 'Empty Card'
+    a,b = -2,2
     for sl in range(a,b):
         for st in range(a,b):
             card = ss[top+st:bottom+st, left+sl:right+sl, :]
 
-            score = np.max(md.predict_rgb(card, raw=True))
-            pred = md.predict_rgb(card)
+            diff, pred = md.predict_1d(card, raw=True)
 
-            if score > sm:
-                sm = score
+            if diff < sm:
+                sm = diff
                 best_pred = pred
             if verbose:
-                print('    >', score, pred)
+                print('    >', diff, pred)
+    if sm >= 25:
+        best_pred = 'Empty Card'
     return best_pred, 0, 0, sm
 
 class ScreenProcessor:
     def __init__(self, model_path, label_dict_path):
-        self.model = load_model(model_path)
+        self.baseline = pickle.load(open(model_path, 'rb'))
         self.label_to_name = pickle.load(open(label_dict_path, 'rb'))
-        self.md = ModeloDeck(self.label_to_name, self.model)
+        self.md = NPModel(self.baseline, self.label_to_name)
         self.from_top, self.from_left = 140, 132
         self.space_h, self.space_w = 345, 210
         self.height, self.width = 135, 180

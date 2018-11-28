@@ -13,7 +13,6 @@ from PIL import Image, ImageTk
 from mss import mss
 
 path_root = os.path.dirname(sys.modules['__main__'].__file__)
-print('PATH:', path_root)
 
 def path(filename):
     global path_root
@@ -37,7 +36,7 @@ stats = load_pickle(path('resources/card_dict.pkl'))
 
 tiers = read_tier_text(path('tier_list.txt'))
 
-sp = ScreenProcessor(path('resources/cnn_v5.h5'), path('resources/label_to_name.pkl'))
+sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'))
 
 def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
@@ -114,11 +113,7 @@ def btnProcessScreen(ll, root):
     
     destroy_list(ll, root)
     
-    try:
-        # get card list
-        s = sp.process_screen()
-    except:
-        print('Error processing screen')
+    s = sp.process_screen()
         
     from_top, from_left = 139, 68
     space_h, space_w = 344, 211
@@ -130,6 +125,7 @@ def btnProcessScreen(ll, root):
             left = from_left + col * space_w
             
             card_name = s[0][row*6+col]
+            card_score = s[1][row*6+col]
             if card_name == 'Empty Slot':
                 continue
                 
@@ -138,8 +134,11 @@ def btnProcessScreen(ll, root):
                 tier = tiers[card_name]
             except:
                 tier = ''
+                wr = ''
                 
-            if card_name not in stats.keys():
+            if card_name == 'Empty Card':
+                continue
+            elif card_name not in stats.keys():
                 print('Card not found:', card_name)
                 continue
                 
