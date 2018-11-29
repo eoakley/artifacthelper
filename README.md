@@ -17,7 +17,7 @@ Run the Artifact Helper executable file and follow the instructions.
 
 * **Artifact running on borderless window mode**
 
-* **Only works on 1080p resolution for now**
+* **Only works on 16:9 resolutions for now**
 
 ### Optional - Building it yourself
 
