@@ -19,9 +19,15 @@ Run the Artifact Helper executable file and follow the instructions.
 
 * **Only works on 16:9 resolutions for now**
 
-### Optional - Building it yourself
+### **Optional** - Running from source
 
-It is also possible to build your own installation if you are an adventurer. Instructions are on file "How to build.txt".
+If you have Python 3, you can run Artifact Helper pretty easily.
+
+1. Install requirements by running "pip install -r requirements.txt".
+
+2. Run on terminal "python artifact_helper.py"
+
+It is also possible to build your own installation (.exe file) if you are an adventurer. Instructions are on file "How to build.txt".
 
 ## How to use
 
@@ -35,7 +41,7 @@ Whenever you want to see the stats of the cards on display just click the "Scan 
 
 ## How does it work
 
-We trained a simple neural network using [Keras](https://github.com/keras-team/keras) to classify cards based on its artwork.
+Uses a hash heuristic to match images via brute force.
 
 Using tier lists and historic data, we can show each card's win rate, pick rate and tier.
 

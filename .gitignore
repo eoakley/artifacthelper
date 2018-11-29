@@ -6,8 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+screen_shot_debugg.png
+
 # Distribution / packaging
 .Python
+pynsist_pkgs/
+lib/
+wheels/
 releases/
 build/
 develop-eggs/

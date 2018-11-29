@@ -42,6 +42,27 @@ def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
     return dif
 
+def save_debugg_screenshot(ss, card_grid):
+
+    red = [255, 0, 0]
+    #draw grid on screenshot for debugging
+    for row in range(2):
+        for col in range(6):
+            #quatro cantos da carta
+            top, left, bottom, right = card_grid[row, col, :]
+
+            #paint square with red.
+            #ss.shape = (1080, 1920, 3)
+            ss[top:bottom, left, :] = red
+            ss[top:bottom, right, :] = red
+            ss[top, left:right, :] = red
+            ss[bottom, left:right, :] = red
+
+    #save screenshot
+    ss_img = Image.fromarray(ss)
+    ss_img.save(path('screen_shot_debugg.png'),"PNG")
+
+########### TODO: need to update this
 def get_draft_state(screen_width, screen_height):
     with mss() as sct:
         mon = sct.monitors[1]
@@ -105,7 +126,7 @@ flag_auto_hide = False
 bg_color = 'magenta'
 
 def btnProcessScreen(ll, root, screen_width, screen_height):
-    global flag_auto_hide
+    global flag_auto_hide, sp
     #inicia auto hide
     if not flag_auto_hide:
         executor.submit(auto_hide, ll, root, screen_width, screen_height)
@@ -113,19 +134,43 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
     
     destroy_list(ll, root)
     
-    s = sp.process_screen()
+    ss, (cards, scores, card_grid) = sp.process_screen()
         
-    from_top, from_left = 139*screen_height//1080, 68*screen_width//1920
-    space_h, space_w = 344*screen_height//1080, 211*screen_width//1920
+    # from_top, from_left = 139*screen_height//1080, 68*screen_width//1920
+    # space_h, space_w = 344*screen_height//1080, 211*screen_width//1920
     
+    #if all cards are empty cards or error in process screen,
+    #show error in UI
+    if len(cards) == 0 or cards.count('Empty Card') == 12:
+        label_height = 80
+        label_width = 240
+
+        txt = "Error detecting cards.\nAre you on draft screen?"
+        #save ss for debugg
+        if len(card_grid) > 1:
+            save_debugg_screenshot(ss, card_grid)
+            txt += "\n\nSaved screen_shot_debugg.png \non installation dir."
+            label_height=160
+            label_width=340
+            
+        l = tk.Label(root, text=txt, justify='center', bg='#222', 
+                    fg="#DDD", font=("Helvetica 14"), borderwidth=3, relief="solid")
+        
+        l.place(x = screen_width//2-label_width, y = 120, width=label_width, height=label_height)
+        
+        ll.append(l)
+
+        return None
+
+    save_debugg_screenshot(ss, card_grid)
     for row in range(2):
         for col in range(6):
             #quatro cantos da carta
-            top = from_top + row * space_h
-            left = from_left + col * space_w
+            top, left, bottom, right = card_grid[row, col, :]
             
-            card_name = s[0][row*6+col]
-            card_score = s[1][row*6+col]
+            card_name = cards[row*6+col]
+            card_score = scores[row*6+col]
+
             if card_name == 'Empty Slot':
                 continue
                 
@@ -152,7 +197,7 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
             l = tk.Label(root, text=txt, justify='right', bg='#222', 
                       fg="#DDD", font=("Helvetica 10 bold"), borderwidth=3, relief="solid")
             
-            l.place(x = left, y = top, width=145, height=61)
+            l.place(anchor='ne', x = left+50, y = top, width=145, height=61)
             
             ll.append(l)
         
@@ -201,8 +246,8 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         coisas.append(b3)
 
         flag_swap = 1
-    else:        
-        #root.call('wm', 'attributes', '.', '-topmost', '-1')
+    else:
+        root.call('wm', 'attributes', '.', '-topmost', '0')
         root.title("Artifact Helper")
 
         #sp global
