@@ -13,8 +13,6 @@ Run the Artifact Helper executable file and follow the instructions.
 
 ### Prerequisites
 
-* **[Microsoft Visual C++ 2015](https://www.microsoft.com/en-us/download/details.aspx?id=53587)**
-
 * **Windows only**
 
 * **Artifact running on borderless window mode**
