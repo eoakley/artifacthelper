@@ -2,6 +2,7 @@ from screen_processor import ScreenProcessor, numpy_flip
 from concurrent.futures import ThreadPoolExecutor
 from artibuff_scrape import Artibuff_Card
 from tier_list_scrape import read_tier_text, Tier_List_Card
+from market_scrape import get_prices
 import os
 import sys
 import pickle
@@ -30,11 +31,25 @@ def load_pickle(file_name="card_dict.pkl"):
         print("Error loading pickle")
         print(err)
 
+def fix_dict(d):
+    '''...And One for Me   ->    ...And One For Me'''
+    if type(d) == str:
+        return ' '.join([a.capitalize() for a in d.split(' ')])
+    d2 = {}
+    for key in d:
+        key2 = ' '.join([a.capitalize() for a in key.split(' ')])
+        d2[key2] = d[key]
+    return d2
+    
 executor = ThreadPoolExecutor(40)
 
-stats = load_pickle(path('resources/card_dict.pkl'))
+stats = fix_dict(load_pickle(path('resources/card_dict.pkl')))
 
-tiers = read_tier_text(path('tier_list.txt'))
+tiers = fix_dict(read_tier_text(path('tier_list.txt')))
+
+#tiers got updated, poor fix for now:
+
+prices = fix_dict(get_prices())
 
 sp = None
 
@@ -168,7 +183,7 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
             #quatro cantos da carta
             top, left, bottom, right = card_grid[row, col, :]
             
-            card_name = cards[row*6+col]
+            card_name = fix_dict(cards[row*6+col])
             card_score = scores[row*6+col]
 
             if card_name == 'Empty Slot':
@@ -176,10 +191,18 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
                 
             try:
                 wr = stats[card_name]['str']
+            except:
+                wr = ''
+
+            try:
                 tier = tiers[card_name]
             except:
                 tier = ''
-                wr = ''
+
+            try:
+                price = prices[card_name]['sell_price']
+            except:
+                price = ''
                 
             if card_name == 'Empty Card':
                 continue
@@ -191,9 +214,10 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
                 tier = '?'
                 
             max_len_name = 20
+            card_name_str = card_name
             if len(card_name) > max_len_name:
-                card_name = card_name[:max_len_name-2] + '..'
-            txt = card_name.rjust(20) + '\n' + str(wr).rjust(20) + '\n' + str(tier).rjust(20)
+                card_name_str = card_name[:max_len_name-2] + '..'
+            txt = card_name_str.rjust(20) + '\n' + str(wr).rjust(20) + '\n' + (str(tier)  + ' ' + price).rjust(20)
             l = tk.Label(root, text=txt, justify='right', bg='#222', 
                       fg="#DDD", font=("Helvetica 10 bold"), borderwidth=3, relief="solid")
             
