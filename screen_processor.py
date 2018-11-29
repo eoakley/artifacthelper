@@ -29,13 +29,13 @@ def robustCard(ss, top, bottom, left, right, md, verbose=False):
     return best_pred, 0, 0, sm
 
 class ScreenProcessor:
-    def __init__(self, model_path, label_dict_path):
+    def __init__(self, model_path, label_dict_path, screen_width, screen_height):
         self.baseline = pickle.load(open(model_path, 'rb'))
         self.label_to_name = pickle.load(open(label_dict_path, 'rb'))
         self.md = NPModel(self.baseline, self.label_to_name)
-        self.from_top, self.from_left = 140, 132
-        self.space_h, self.space_w = 345, 210
-        self.height, self.width = 135, 180
+        self.from_top, self.from_left = 140*screen_height//1080, 132*screen_width//1920
+        self.space_h, self.space_w = 345*screen_height//1080, 210*screen_width//1920
+        self.height, self.width = 135*screen_height//1080, 180*screen_width//1920
 
     def process_ss(self, ss):
         '''Process a screenshot and returns predictions for cards.

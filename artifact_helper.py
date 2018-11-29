@@ -36,21 +36,21 @@ stats = load_pickle(path('resources/card_dict.pkl'))
 
 tiers = read_tier_text(path('tier_list.txt'))
 
-sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'))
+sp = None
 
 def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
     return dif
 
-def get_draft_state():
+def get_draft_state(screen_width, screen_height):
     with mss() as sct:
         mon = sct.monitors[1]
 
         monitor = {
-            "top": mon["top"] + 48,
-            "left": mon["left"] + 1385,
-            "width": 56,
-            "height": 52,
+            "top": mon["top"] + 48*screen_height//1080,
+            "left": mon["left"] + 1385*screen_width//1920,
+            "width": 56*screen_width//1920,
+            "height": 52*screen_height//1080,
             "mon": 1,
         }
 
@@ -70,14 +70,14 @@ def destroy_list(ll, root):
     ll = []
     root.update()
 
-def auto_hide(ll, root):
+def auto_hide(ll, root, screen_width, screen_height):
     global flag_auto_hide
     thresh = 5
-    img2 = get_draft_state()
+    img2 = get_draft_state(screen_width, screen_height)
     
     while(1):
         #checks pixels
-        img = get_draft_state()
+        img = get_draft_state(screen_width, screen_height)
         
         #compare
         dif = compare_images(img, img2)
@@ -85,7 +85,7 @@ def auto_hide(ll, root):
         #mouse
         mx, my = root.winfo_pointerxy()
         
-        inside = mx >= (1385-40) and mx <= (1385 + 56 +20) and my >= (48 -20) and my <= (48 + 52+20)
+        inside = mx >= (1385-40)*screen_width//1920 and mx <= (1385 + 56 +20)*screen_width//1920 and my >= (48 -20)*screen_height//1080 and my <= (48 + 52+20)*screen_height//1080
         if dif > thresh and not inside:
             destroy_list(ll, root)
             img2 = img
@@ -104,19 +104,19 @@ flag_auto_hide = False
 
 bg_color = 'magenta'
 
-def btnProcessScreen(ll, root):
+def btnProcessScreen(ll, root, screen_width, screen_height):
     global flag_auto_hide
     #inicia auto hide
     if not flag_auto_hide:
-        executor.submit(auto_hide, ll, root)
+        executor.submit(auto_hide, ll, root, screen_width, screen_height)
         flag_auto_hide = True
     
     destroy_list(ll, root)
     
     s = sp.process_screen()
         
-    from_top, from_left = 139, 68
-    space_h, space_w = 344, 211
+    from_top, from_left = 139*screen_height//1080, 68*screen_width//1920
+    space_h, space_w = 344*screen_height//1080, 211*screen_width//1920
     
     for row in range(2):
         for col in range(6):
@@ -159,8 +159,8 @@ def btnProcessScreen(ll, root):
 def close_window(root): 
     root.destroy()
     
-def swap_window(root, first_time=False):
-    global coisas, flag_swap, flag_auto_hide, label_list
+def swap_window(root, screen_width, screen_height, first_time=False):
+    global coisas, flag_swap, flag_auto_hide, label_list, sp
     flag_auto_hide = False
     
     #clean stuff
@@ -186,7 +186,7 @@ def swap_window(root, first_time=False):
 
         top_border = 60
         left_space = 860
-        b = tk.Button(root, text="Scan Cards", command=lambda: btnProcessScreen(label_list, root), bg='#CCC', relief='flat', borderwidth=0)
+        b = tk.Button(root, text="Scan Cards", command=lambda: btnProcessScreen(label_list, root, screen_width, screen_height), bg='#CCC', relief='flat', borderwidth=0)
         b.config(image=btnImgScan)
         b.image = btnImgScan
         b.place(x = left_space-96, y = top_border-32, width=166, height=57)
@@ -196,7 +196,7 @@ def swap_window(root, first_time=False):
         b2.place(x = left_space+313, y = 3, width=20, height=25)
         coisas.append(b2)
 
-        b3 = tk.Button(root, text="X", command = lambda: swap_window(root), bg='#CCC')
+        b3 = tk.Button(root, text="X", command = lambda: swap_window(root, screen_width, screen_height), bg='#CCC')
         b3.place(x = left_space+334, y = 3, width=20, height=25)
         coisas.append(b3)
 
@@ -205,8 +205,8 @@ def swap_window(root, first_time=False):
         #root.call('wm', 'attributes', '.', '-topmost', '-1')
         root.title("Artifact Helper")
 
-        screen_width = root.winfo_screenwidth() # width of the screen
-        screen_height = root.winfo_screenheight() 
+        #sp global
+        sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'), screen_width, screen_height)
 
         root.geometry("800x340+%d+%d" % (screen_width/2-400,screen_height/2-300))
         root.configure(background="#333")
@@ -225,7 +225,7 @@ def swap_window(root, first_time=False):
         lg.place(x = 0, y = 1, width=800, height=600)
         coisas.append(lg)
 
-        b = tk.Button(root, text="Launch Overlay", command=lambda: swap_window(root), bg='#CCC', relief='flat', borderwidth=0)
+        b = tk.Button(root, text="Launch Overlay", command=lambda: swap_window(root, screen_width, screen_height), bg='#CCC', relief='flat', borderwidth=0)
         b.config(image=btnImgScan)
         b.image = btnImgScan
         b.place(x = 84, y = 171, width=205, height=57)
@@ -240,8 +240,11 @@ def swap_window(root, first_time=False):
 def main():
     root = tk.Tk()
     root.iconbitmap(path('favicon.ico'))
+
+    screen_width = root.winfo_screenwidth() # width of the screen
+    screen_height = root.winfo_screenheight() 
     
-    swap_window(root, first_time=True)
+    swap_window(root, screen_width, screen_height, first_time=True)
     
     root.mainloop()
 
