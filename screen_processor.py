@@ -67,7 +67,7 @@ def get_card_positions(ss, screen_width, screen_height, verbose=0):
             break
 
     #from 1/3 to top, find top border
-    for i in range(screen_height//3, 0, -1):
+    for i in range(screen_height//4, 0, -1):
         arr = np.max(ss[i, :, :])
         if np.max(arr) < 60 and np.mean(arr) < 60:
             top_border = i
