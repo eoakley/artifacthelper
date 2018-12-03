@@ -9,6 +9,7 @@ __pycache__/
 screen_shot_debugg.png
 
 # Distribution / packaging
+scrape/
 .Python
 pynsist_pkgs/
 lib/

@@ -19,8 +19,11 @@ def path(filename):
     global path_root
     return os.path.join(path_root, filename)
 
-def OpenUrl():
-    webbrowser.open_new('https://github.com/eoakley/artifacthelper')
+def OpenUrl(opt=''):
+    if opt=='issue':
+        webbrowser.open_new('https://github.com/eoakley/artifacthelper/issues')
+    else:
+        webbrowser.open_new('https://github.com/eoakley/artifacthelper')
 
 def load_pickle(file_name="card_dict.pkl"):
     try:
@@ -49,7 +52,7 @@ tiers = fix_dict(read_tier_text(path('tier_list.txt')))
 
 #tiers got updated, poor fix for now:
 
-prices = fix_dict(get_prices())
+prices = None
 
 sp = None
 
@@ -246,7 +249,7 @@ def StopMove(root,event):
     overlay_x, overlay_y = root.winfo_x(), root.winfo_y()
 
 def OnMotion(root, event):
-    print("on motion")
+    #print("on motion")
     global x_drag,y_drag
     deltax = event.x - x_drag
     deltay = event.y - y_drag
@@ -256,7 +259,7 @@ def OnMotion(root, event):
 
 
 def swap_window(root, screen_width, screen_height, first_time=False):
-    global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y
+    global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y, prices
     flag_auto_hide = False
 
     print("Last position:")
@@ -328,6 +331,10 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.overrideredirect(0) # border 
         root.resizable(False, False)
 
+        if first_time:
+            prices = fix_dict(get_prices())
+            pass
+
         if not first_time:
             #root.lower()
             pass
@@ -342,13 +349,17 @@ def swap_window(root, screen_width, screen_height, first_time=False):
 
         b = tk.Button(root, text="Launch Overlay", command=lambda: swap_window(root, screen_width, screen_height), bg='#CCC', relief='flat', borderwidth=0)
         b.config(image=btnImgScan)
-        b.image = btnImgScan
+        b.image = btnImgScan #gc hack
         b.place(x = 84, y = 171, width=205, height=57)
         coisas.append(b)
         
         b2 = tk.Button(root, text="?", command=lambda: OpenUrl(), bg='#CCC')
         b2.place(x = 776, y = 5, width=20, height=25)
         coisas.append(b2)
+
+        b3 = tk.Button(root, text="Report Problem", command=lambda: OpenUrl('issue'), bg='#CCC')
+        b3.place(x = 660, y = 5, width=110, height=25)
+        coisas.append(b3)
         
         flag_swap = 0
 

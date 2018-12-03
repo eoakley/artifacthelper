@@ -53,7 +53,6 @@ Tested only on Windows 10.
 
 ## To do
 
-* Add support for different resolutions and environments
 * Add an option to automatically scan the cards
 * Deck tracker
 * Advanced card recomendadion (based on synergy and mana curve)
