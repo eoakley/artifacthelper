@@ -136,6 +136,10 @@ label_list = []
 flag_swap = 1
 coisas = []
 
+launcher_x , launcher_y,=  0,0
+overlay_x , overlay_y = 100,0
+x_drag,y_drag= None,None
+
 flag_auto_hide = False
 
 bg_color = 'magenta'
@@ -227,26 +231,56 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
         
 def close_window(root): 
     root.destroy()
-    
+
+def StartMove(event):
+    print("ini move")
+    global x_drag,y_drag
+    x_drag = event.x
+    y_drag = event.y
+
+def StopMove(root,event):
+    print("end move")
+    global x_drag,y_drag,overlay_x,overlay_y
+    x_drag = None
+    y_drag = None
+    overlay_x, overlay_y = root.winfo_x(), root.winfo_y()
+
+def OnMotion(root, event):
+    print("on motion")
+    global x_drag,y_drag
+    deltax = event.x - x_drag
+    deltay = event.y - y_drag
+    x = root.winfo_x() + deltax
+    y = root.winfo_y() + deltay
+    root.geometry("+%s+%s" % (x, y))
+
+
 def swap_window(root, screen_width, screen_height, first_time=False):
-    global coisas, flag_swap, flag_auto_hide, label_list, sp
+    global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y
     flag_auto_hide = False
+
+    print("Last position:")
+    print(root.winfo_x(), root.winfo_y())
     
     #clean stuff
     destroy_list(coisas, root)
     destroy_list(label_list, root)
     
     if flag_swap == 0:
+        launcher_x , launcher_y = root.winfo_x(), root.winfo_y()
+
         root.call('wm', 'attributes', '.', '-topmost', '1')
         root.call('wm', 'attributes', '.', '-transparentcolor', bg_color)
         root.title("Artifact Helper")
-        root.geometry("1400x740+%d+%d" % (100,0))
+        root.geometry("1400x740+%d+%d" % (overlay_x,overlay_y))
         root.configure(background=bg_color)
         root.lift()
         root.overrideredirect(1) #Remove border
+        
 
         logo = ImageTk.PhotoImage(Image.open(path('resources/banner_1.png')))
         btnImgScan = ImageTk.PhotoImage(Image.open(path('resources/btn_scan_1.png')))
+        btnImgMove = ImageTk.PhotoImage(Image.open(path('resources/btn_move.png')))
 
         lg = tk.Label(root, image=logo, borderwidth=0, relief="solid")
         lg.image = logo
@@ -269,6 +303,18 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         b3.place(x = left_space+334, y = 3, width=20, height=25)
         coisas.append(b3)
 
+        grip = tk.Button(root, text="<>", bg='#CCC')
+        grip.place(x = left_space+292, y = 3, width=25, height=25)
+        grip.config(image=btnImgMove)
+        grip.image = btnImgMove
+        grip.bind("<ButtonPress-1>", StartMove)
+        grip.bind("<ButtonRelease-1>", lambda event: StopMove(root,event))
+        grip.bind("<B1-Motion>", lambda event: OnMotion(root,event))
+
+        coisas.append(grip)
+
+
+
         flag_swap = 1
     else:
         root.call('wm', 'attributes', '.', '-topmost', '0')
@@ -277,7 +323,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         #sp global
         sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'), screen_width, screen_height)
 
-        root.geometry("800x340+%d+%d" % (screen_width/2-400,screen_height/2-300))
+        root.geometry("800x340+%d+%d" % (launcher_x , launcher_y))
         root.configure(background="#333")
         root.overrideredirect(0) # border 
         root.resizable(False, False)
@@ -307,11 +353,14 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         flag_swap = 0
 
 def main():
+    global launcher_x , launcher_y
+
     root = tk.Tk()
     root.iconbitmap(path('favicon.ico'))
 
     screen_width = root.winfo_screenwidth() # width of the screen
     screen_height = root.winfo_screenheight() 
+    launcher_x , launcher_y = screen_width/2-400,screen_height/2-300
     
     swap_window(root, screen_width, screen_height, first_time=True)
     
