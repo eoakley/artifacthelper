@@ -56,12 +56,29 @@ prices = None
 
 sp = None
 
+label_list = []
+flag_swap = 1
+coisas = []
+
+launcher_x, launcher_y =  0, 0
+overlay_x, overlay_y = 100, 0
+x_drag, y_drag = None, None
+
+flag_auto_hide = False
+
+flag_auto_scan = False
+
+bg_color = 'magenta'
+
+btn_auto_scan = None
+
 def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
     return dif
 
-def save_debugg_screenshot(ss, card_grid):
+def save_debugg_screenshot(ss, card_grid, borders):
 
+    top_border, left_border, right_border = borders
     red = [255, 0, 0]
     #draw grid on screenshot for debugging
     for row in range(2):
@@ -75,6 +92,13 @@ def save_debugg_screenshot(ss, card_grid):
             ss[top:bottom, right, :] = red
             ss[top, left:right, :] = red
             ss[bottom, left:right, :] = red
+
+
+    green = [0, 255, 0]
+    ss[top_border, :, :] = green
+    ss[:, left_border, :] = green
+    ss[:, right_border, :] = green
+
 
     #save screenshot
     ss_img = Image.fromarray(ss)
@@ -133,31 +157,20 @@ def auto_hide(ll, root, screen_width, screen_height):
         
         #sleeps
         time.sleep(.2)
-        
 
-label_list = []
-flag_swap = 1
-coisas = []
+def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False):
+    global flag_auto_hide, sp, flag_swap
 
-launcher_x , launcher_y,=  0,0
-overlay_x , overlay_y = 100,0
-x_drag,y_drag= None,None
-
-flag_auto_hide = False
-
-bg_color = 'magenta'
-
-def btnProcessScreen(ll, root, screen_width, screen_height):
-    global flag_auto_hide, sp
     #inicia auto hide
     if not flag_auto_hide:
-        executor.submit(auto_hide, ll, root, screen_width, screen_height)
+        executor.submit(auto_hide, ll_cur, root, screen_width, screen_height)
         flag_auto_hide = True
-    
-    destroy_list(ll, root)
-    
-    ss, (cards, scores, card_grid) = sp.process_screen()
         
+    ss, (cards, scores, card_grid, (top_border, left_border, right_border)) = sp.process_screen()
+
+    ll = []
+    #destroy_list(ll, root)
+
     # from_top, from_left = 139*screen_height//1080, 68*screen_width//1920
     # space_h, space_w = 344*screen_height//1080, 211*screen_width//1920
     
@@ -170,7 +183,7 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
         txt = "Error detecting cards.\nAre you on draft screen?"
         #save ss for debugg
         if len(card_grid) > 1:
-            save_debugg_screenshot(ss, card_grid)
+            save_debugg_screenshot(ss, card_grid, (top_border, left_border, right_border))
             txt += "\n\nSaved screen_shot_debugg.png \non installation dir."
             label_height=160
             label_width=340
@@ -182,9 +195,12 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
         
         ll.append(l)
 
+        destroy_list(ll_cur, root)
+        for ele in ll:
+            ll_cur.append(ele)
         return None
 
-    save_debugg_screenshot(ss, card_grid)
+    #save_debugg_screenshot(ss, card_grid, (top_border, left_border, right_border))
     for row in range(2):
         for col in range(6):
             #quatro cantos da carta
@@ -231,18 +247,51 @@ def btnProcessScreen(ll, root, screen_width, screen_height):
             l.place(anchor='ne', x = left+50, y = top, width=145, height=61)
             
             ll.append(l)
+
+    destroy_list(ll_cur, root)
+    for ele in ll:
+        ll_cur.append(ele)
+    return
+                
+def auto_scan(ll, root, screen_width, screen_height):
+    global flag_swap
+    """Automatic scan for new cards"""
+    while(1):
+        if flag_auto_scan == False or flag_swap == 0:
+            print("Closing auto scan")
+            break
+
+        print("Auto Scanning")
+        btnProcessScreen(ll, root, screen_width, screen_height)
         
+        #sleeps
+        time.sleep(0.5)
+
+def call_auto_scan(ll, root, screen_width, screen_height, btn_auto_scan):
+    global flag_auto_scan
+    flag_auto_scan = not flag_auto_scan
+    print("Auto Scan is on?", flag_auto_scan)
+    if flag_auto_scan:
+        btn_auto_scan['text'] = '[on] Auto Scan'
+    else:
+        btn_auto_scan['text'] = '[off] Auto Scan'
+
+    if flag_auto_scan == False:
+        return
+
+    executor.submit(auto_scan, ll, root, screen_width, screen_height)
+
 def close_window(root): 
     root.destroy()
 
 def StartMove(event):
-    print("ini move")
+    #print("ini move")
     global x_drag,y_drag
     x_drag = event.x
     y_drag = event.y
 
 def StopMove(root,event):
-    print("end move")
+    #print("end move")
     global x_drag,y_drag,overlay_x,overlay_y
     x_drag = None
     y_drag = None
@@ -259,17 +308,18 @@ def OnMotion(root, event):
 
 
 def swap_window(root, screen_width, screen_height, first_time=False):
-    global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y, prices
+    global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y, prices, btn_auto_scan
     flag_auto_hide = False
 
-    print("Last position:")
-    print(root.winfo_x(), root.winfo_y())
+    #print("Last position:")
+    #print(root.winfo_x(), root.winfo_y())
     
     #clean stuff
     destroy_list(coisas, root)
     destroy_list(label_list, root)
     
     if flag_swap == 0:
+        # SCAN OVERLAY WINDOW
         launcher_x , launcher_y = root.winfo_x(), root.winfo_y()
 
         root.call('wm', 'attributes', '.', '-topmost', '1')
@@ -298,16 +348,24 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         b.place(x = left_space-96, y = top_border-32, width=166, height=57)
         coisas.append(b)
 
+        btn_auto_scan = tk.Button(root, text='[off] Auto Scan', command=lambda: call_auto_scan(label_list, root, screen_width, screen_height, btn_auto_scan), bg='#CCC')
+        if flag_auto_scan:
+            btn_auto_scan['text'] = '[on] Auto Scan'
+        else:
+            btn_auto_scan['text'] = '[off] Auto Scan'
+        btn_auto_scan.place(x = left_space+160, y = 4, width=130, height=25)
+        coisas.append(btn_auto_scan)
+
         b2 = tk.Button(root, text="?", command=lambda: OpenUrl(), bg='#CCC')
-        b2.place(x = left_space+313, y = 3, width=20, height=25)
+        b2.place(x = left_space+313, y = 4, width=20, height=25)
         coisas.append(b2)
 
         b3 = tk.Button(root, text="X", command = lambda: swap_window(root, screen_width, screen_height), bg='#CCC')
-        b3.place(x = left_space+334, y = 3, width=20, height=25)
+        b3.place(x = left_space+334, y = 4, width=20, height=25)
         coisas.append(b3)
 
         grip = tk.Button(root, text="<>", bg='#CCC')
-        grip.place(x = left_space+292, y = 3, width=25, height=25)
+        grip.place(x = left_space+292, y = 4, width=25, height=25)
         grip.config(image=btnImgMove)
         grip.image = btnImgMove
         grip.bind("<ButtonPress-1>", StartMove)
@@ -320,6 +378,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
 
         flag_swap = 1
     else:
+        #LAUNCHER WINDOW
         root.call('wm', 'attributes', '.', '-topmost', '0')
         root.title("Artifact Helper")
 
@@ -330,10 +389,6 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.configure(background="#333")
         root.overrideredirect(0) # border 
         root.resizable(False, False)
-
-        if first_time:
-            prices = fix_dict(get_prices())
-            pass
 
         if not first_time:
             #root.lower()
@@ -360,6 +415,12 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         b3 = tk.Button(root, text="Report Problem", command=lambda: OpenUrl('issue'), bg='#CCC')
         b3.place(x = 660, y = 5, width=110, height=25)
         coisas.append(b3)
+
+        if first_time:
+            try:
+                prices = fix_dict(get_prices())
+            except:
+                print("Could not get prices. Try again later.")
         
         flag_swap = 0
 
