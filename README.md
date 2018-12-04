@@ -15,9 +15,7 @@ Run the Artifact Helper executable file and follow the instructions.
 
 * **Windows only**
 
-* **Artifact running on borderless window mode**
-
-* **Only works on 16:9 resolutions for now**
+* **Artifact running on borderless window or windowed mode**
 
 ### **Optional** - Running from source
 
@@ -35,7 +33,7 @@ After installation, simply launch the program via the start menu shortcut whenev
 
 When you are on a draft card selection screen click the "Launch Overlay" button and then switch back to your game.
 
-If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** mode).
+If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** or **windowed** mode).
 
 Whenever you want to see the stats of the cards on display just click the "Scan Cards". After you finished the draft close the overlay window (click on the X on the top-right corner)
 
@@ -53,10 +51,9 @@ Tested only on Windows 10.
 
 ## To do
 
-* Add an option to automatically scan the cards
 * Deck tracker
 * Advanced card recomendadion (based on synergy and mana curve)
-* Add custom options on the launcher
+* Custom options on the launcher
 
 ## Authors
 
