@@ -296,6 +296,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.call('wm', 'attributes', '.', '-topmost', '1')
         root.call('wm', 'attributes', '.', '-transparentcolor', bg_color)
         root.title("Artifact Helper")
+        print("Creating overlay with size:", screen_width, screen_height)
         root.geometry("%dx%d+%d+%d" % (screen_width, screen_height, overlay_x,overlay_y))
         root.configure(background=bg_color)
         root.lift()
