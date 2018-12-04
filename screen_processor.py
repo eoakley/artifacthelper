@@ -281,10 +281,11 @@ class ScreenProcessor:
         #if detected grid correctly, uses this grid for the rest of the program instance
         if cards.count('Empty Card') != len(cards):
             #at least one image was not empy, so it must have worked.
+            print("It worked! At least one card is not empty.")
             self.card_grid = card_grid
             self.borders = borders
 
-        #print(cards, card_grid)
+        print(cards, borders)
         return cards, scores, card_grid, borders
     
     def process_screen(self):
