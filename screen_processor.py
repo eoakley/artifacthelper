@@ -1,6 +1,8 @@
 import pickle
 from modelo_hash import NPModel, imgToFeatures
 import numpy as np
+import os
+import sys
 #from mss import mss
 try:
     import win32gui
@@ -10,6 +12,11 @@ except:
     from pythonwin import win32ui
 from ctypes import windll
 from PIL import Image
+
+path_root = os.path.dirname(sys.modules['__main__'].__file__)
+def path(filename):
+    global path_root
+    return os.path.join(path_root, filename)
 
 def scale_grid(scale, top, left):
     """Card grid seems to be fixed. Only thing that changes is its scale and position.
@@ -39,47 +46,114 @@ def scale_grid(scale, top, left):
 
     return card_grid
 
-def get_card_positions(ss, screen_width, screen_height, verbose=0):
+def save_debugg_screenshot(ss, card_grid, borders):
+
+    top_border, left_border, right_border = borders
+    red = [255, 0, 0]
+    #draw grid on screenshot for debugging
+    for row in range(2):
+        for col in range(6):
+            #quatro cantos da carta
+            top, left, bottom, right = card_grid[row, col, :]
+
+            #paint square with red.
+            #ss.shape = (1080, 1920, 3)
+            ss[top:bottom, left, :] = red
+            ss[top:bottom, right, :] = red
+            ss[top, left:right, :] = red
+            ss[bottom, left:right, :] = red
+
+
+    green = [0, 255, 0]
+    ss[top_border, :, :] = green
+    ss[:, left_border, :] = green
+    ss[:, right_border, :] = green
+
+
+    #save screenshot
+    ss_img = Image.fromarray(ss)
+    ss_img.save(path('screen_shot_debugg.png'),"PNG")
+
+def is_border(arr, verbose=False):
+    """New logic to detect borders:
+        Top 1% pixels (Green Channel only) should not be
+        much greater than bottom 10% of pixels.
+        Also global mean should be close to (0,0,0)
+            which is black."""
+    #arr.shape = (game_height, 3)
+
+    #old logic
+    #return np.max(arr) < 50 and np.mean(arr) < 50
+
+    # print(arr.shape)
+    top_1 = arr[arr >= np.percentile(arr, 99)]
+    bottom_10 = arr[arr <= np.percentile(arr, 90)]
+
+    threshold_diff_top_bot = 10
+    threshold_mean_black = 20
+    max_threshold = 40
+    # print('\n\n')
+    # print(top_1)
+    # print(bottom_10)
+    top_bot_val = np.abs(np.mean(top_1) - np.mean(bottom_10))
+    top_bot_check = top_bot_val < threshold_diff_top_bot
+    blackness_check = np.mean(arr) < threshold_mean_black
+    max_check = np.max(arr) < max_threshold
+
+    return top_bot_check and blackness_check and max_check, top_bot_val, np.mean(arr), np.max(arr)
+
+def get_card_positions(ss, game_width, game_height, verbose=False):
     #objective: bounding boxes of the drafting cards region
     #l left r right, t top b bottom
 
-    bottom_border = int(screen_height*0.8)
+    bottom_cut = int(game_height*0.85)
+    bottom_cut_top = int(game_height*0.70)
     #assuming ss.shape = (1080,1920,3)
 
+    #should only run once
+    print("Detecting grid once...", ss.shape)
+
     #from one third of the screen to the left, find left border of the cards
-    for i in range(screen_width//3, 0, -1):
-        #check maximum R, G, B values on a line the top of the screen (0) to bottom_bar
-        arr = np.max(ss[:bottom_border, i, :])
-        if np.max(arr) < 45 and np.mean(arr) < 25:
-            #if maximum values are all below threshold, save this position and break
+    for i in range(game_width//3, 0, -1):
+        arr = ss[bottom_cut_top:bottom_cut, i, 1]
+        check, top_bot_val, mean_val, max_val = is_border(arr, verbose=verbose)
+        if check:
             left_border = i
             if verbose:
                 print('Found left border at', i)
-                print('With max and mean:', np.max(arr), np.min(arr))
+                print('With top_bot_val, mean, max:', top_bot_val, mean_val, max_val)
                 print('')
             break
 
-    #from 2/3 of screen to right, find right border of the card region
-    for i in range(screen_width*2//3, screen_width, 1):
-        arr = np.max(ss[:bottom_border, i, :])
-        #if verbose:
-            #print('>> ', i, ' >> ', 'With max and mean:', np.max(arr), np.min(arr))
-        if np.max(arr) < 50 and np.mean(arr) < 50:
+    #from 1/2 of screen to right, find right border of the card region
+    for i in range(game_width//2, game_width, 1):
+        arr = ss[bottom_cut_top:bottom_cut, i, 1]
+        check, top_bot_val, mean_val, max_val = is_border(arr, verbose=verbose)
+        if check:
             right_border = i
             if verbose:
                 print('Found right border at', i)
-                print('With max and mean:', np.max(arr), np.min(arr))
+                print('With top_bot_val, mean, max:', top_bot_val, mean_val, max_val)
+                arr = ss[bottom_cut_top:bottom_cut, i-2, 1]
+                check, top_bot_val, mean_val, max_val = is_border(arr, verbose=verbose)
+                print('Found right border at', i-2)
+                print('With top_bot_val, mean, max:', top_bot_val, mean_val, max_val)
+                arr = ss[bottom_cut_top:bottom_cut, i-5, 1]
+                check, top_bot_val, mean_val, max_val = is_border(arr, verbose=verbose)
+                print('Found right border at', i-5)
+                print('With top_bot_val, mean, max:', top_bot_val, mean_val, max_val)
                 print('')
             break
 
-    #from 1/3 to top, find top border
-    for i in range(screen_height//4, 0, -1):
-        arr = np.max(ss[i, :, :])
-        if np.max(arr) < 60 and np.mean(arr) < 60:
+    #from 1/4 to top, find top border
+    for i in range(game_height//4, 0, -1):
+        arr = ss[i, :, 1]
+        check, top_bot_val, mean_val, max_val = is_border(arr, verbose=verbose)
+        if check:
             top_border = i
             if verbose:
                 print('Found top border at', i)
-                print('With max and mean:', np.max(arr), np.min(arr))
+                print('With top_bot_val, mean, max:', top_bot_val, mean_val, max_val)
                 print('')
             break
 
@@ -134,8 +208,8 @@ def grab_artifact():
 
     # Change the line below depending on whether you want the whole window
     # or just the client area. 
-    #left, top, right, bot = win32gui.GetClientRect(hwnd)
-    left, top, right, bot = win32gui.GetWindowRect(hwnd)
+    left, top, right, bot = win32gui.GetClientRect(hwnd)
+    #left, top, right, bot = win32gui.GetWindowRect(hwnd)
     w = right - left
     h = bot - top
 
@@ -150,8 +224,8 @@ def grab_artifact():
 
     # Change the line below depending on whether you want the whole window
     # or just the client area. 
-    #result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
-    result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
+    result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
+    #result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
     try:
         assert result == 1
     except Exception as e:
@@ -170,16 +244,14 @@ def grab_artifact():
     return ss
 
 class ScreenProcessor:
-    def __init__(self, model_path, label_dict_path, screen_width, screen_height):
+    def __init__(self, model_path, label_dict_path, verbose=False):
         self.baseline = pickle.load(open(model_path, 'rb'))
         self.label_to_name = pickle.load(open(label_dict_path, 'rb'))
         self.md = NPModel(self.baseline, self.label_to_name)
         self.card_grid = []
         self.borders = None
-        #self.screen_width = screen_width
-        #self.screen_height = screen_height
 
-    def process_ss(self, ss):
+    def process_ss(self, ss, verbose=False):
         '''Process a screenshot and returns predictions for cards.
             ss: RGB numpy matrix. Example shape: (1080, 1920, 3)'''
 
@@ -187,7 +259,7 @@ class ScreenProcessor:
         if len(self.card_grid) > 0:
             card_grid, borders = self.card_grid, self.borders
         else:
-            card_grid, borders = get_card_positions(ss, self.screen_width, self.screen_height, verbose=False)
+            card_grid, borders = get_card_positions(ss, self.game_width, self.game_height, verbose=verbose)
 
         #error on card grid detection
         if len(card_grid) == 0:
@@ -218,8 +290,8 @@ class ScreenProcessor:
     def process_screen(self):
         ss = grab_artifact()
 
-        self.screen_width = ss.shape[1]
-        self.screen_height = ss.shape[0]
+        self.game_width = ss.shape[1]
+        self.game_height = ss.shape[0]
         
         #old code
         #with mss() as sct:
@@ -228,3 +300,19 @@ class ScreenProcessor:
 
         #print("Screenshot shape:", ss.shape)
         return ss, self.process_ss(ss)
+
+if __name__ == "__main__":
+    from PIL import Image
+    sp = ScreenProcessor('resources/dhash_v1.pkl', 'resources/label_to_name.pkl')
+    ss = Image.open('D:\Google Drive\Jupyter\Artifact\Helper (dev)\ss_1080_2.jpg')
+    ss = np.array(ss.convert('RGB'))
+
+    print(ss.shape)
+
+    sp.game_width = ss.shape[1]
+    sp.game_height = ss.shape[0]
+
+    #print("Screenshot shape:", ss.shape)
+    cards, scores, card_grid, borders = sp.process_ss(ss, verbose=True)
+
+    save_debugg_screenshot(ss, card_grid, borders)

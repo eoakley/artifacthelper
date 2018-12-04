@@ -1,4 +1,4 @@
-from screen_processor import ScreenProcessor, numpy_flip
+from screen_processor import ScreenProcessor, numpy_flip, save_debugg_screenshot
 from concurrent.futures import ThreadPoolExecutor
 from artibuff_scrape import Artibuff_Card
 from tier_list_scrape import read_tier_text, Tier_List_Card
@@ -14,7 +14,6 @@ from PIL import Image, ImageTk
 from mss import mss
 
 path_root = os.path.dirname(sys.modules['__main__'].__file__)
-
 def path(filename):
     global path_root
     return os.path.join(path_root, filename)
@@ -61,7 +60,7 @@ flag_swap = 1
 coisas = []
 
 launcher_x, launcher_y =  0, 0
-overlay_x, overlay_y = 100, 0
+overlay_x, overlay_y = 0, 0
 x_drag, y_drag = None, None
 
 flag_auto_hide = False
@@ -75,34 +74,6 @@ btn_auto_scan = None
 def compare_images(img, img2):
     dif = np.mean(np.abs(img.astype(int) - img2.astype(int)))
     return dif
-
-def save_debugg_screenshot(ss, card_grid, borders):
-
-    top_border, left_border, right_border = borders
-    red = [255, 0, 0]
-    #draw grid on screenshot for debugging
-    for row in range(2):
-        for col in range(6):
-            #quatro cantos da carta
-            top, left, bottom, right = card_grid[row, col, :]
-
-            #paint square with red.
-            #ss.shape = (1080, 1920, 3)
-            ss[top:bottom, left, :] = red
-            ss[top:bottom, right, :] = red
-            ss[top, left:right, :] = red
-            ss[bottom, left:right, :] = red
-
-
-    green = [0, 255, 0]
-    ss[top_border, :, :] = green
-    ss[:, left_border, :] = green
-    ss[:, right_border, :] = green
-
-
-    #save screenshot
-    ss_img = Image.fromarray(ss)
-    ss_img.save(path('screen_shot_debugg.png'),"PNG")
 
 ########### TODO: need to update this
 def get_draft_state(screen_width, screen_height):
@@ -161,12 +132,12 @@ def auto_hide(ll, root, screen_width, screen_height):
 def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False):
     global flag_auto_hide, sp, flag_swap
 
-    #inicia auto hide
-    if not flag_auto_hide:
-        executor.submit(auto_hide, ll_cur, root, screen_width, screen_height)
-        flag_auto_hide = True
+    #auto hide disabled for now
+    #if not flag_auto_hide:
+        #executor.submit(auto_hide, ll_cur, root, screen_width, screen_height)
+        #flag_auto_hide = True
         
-    ss, (cards, scores, card_grid, (top_border, left_border, right_border)) = sp.process_screen()
+    ss, (cards, scores, card_grid, borders) = sp.process_screen()
 
     ll = []
     #destroy_list(ll, root)
@@ -183,7 +154,7 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
         txt = "Error detecting cards.\nAre you on draft screen?"
         #save ss for debugg
         if len(card_grid) > 1:
-            save_debugg_screenshot(ss, card_grid, (top_border, left_border, right_border))
+            save_debugg_screenshot(ss, card_grid, borders)
             txt += "\n\nSaved screen_shot_debugg.png \non installation dir."
             label_height=160
             label_width=340
@@ -200,7 +171,7 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
             ll_cur.append(ele)
         return None
 
-    #save_debugg_screenshot(ss, card_grid, (top_border, left_border, right_border))
+    #save_debugg_screenshot(ss, card_grid, borders)
     for row in range(2):
         for col in range(6):
             #quatro cantos da carta
@@ -258,10 +229,10 @@ def auto_scan(ll, root, screen_width, screen_height):
     """Automatic scan for new cards"""
     while(1):
         if flag_auto_scan == False or flag_swap == 0:
-            print("Closing auto scan")
+            #print("Closing auto scan")
             break
 
-        print("Auto Scanning")
+        #print("Auto Scanning")
         btnProcessScreen(ll, root, screen_width, screen_height)
         
         #sleeps
@@ -270,7 +241,7 @@ def auto_scan(ll, root, screen_width, screen_height):
 def call_auto_scan(ll, root, screen_width, screen_height, btn_auto_scan):
     global flag_auto_scan
     flag_auto_scan = not flag_auto_scan
-    print("Auto Scan is on?", flag_auto_scan)
+    #print("Auto Scan is on?", flag_auto_scan)
     if flag_auto_scan:
         btn_auto_scan['text'] = '[on] Auto Scan'
     else:
@@ -325,7 +296,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.call('wm', 'attributes', '.', '-topmost', '1')
         root.call('wm', 'attributes', '.', '-transparentcolor', bg_color)
         root.title("Artifact Helper")
-        root.geometry("1400x740+%d+%d" % (overlay_x,overlay_y))
+        root.geometry("%dx%d+%d+%d" % (screen_width, screen_height, overlay_x,overlay_y))
         root.configure(background=bg_color)
         root.lift()
         root.overrideredirect(1) #Remove border
@@ -383,7 +354,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.title("Artifact Helper")
 
         #sp global
-        sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'), screen_width, screen_height)
+        sp = ScreenProcessor(path('resources/dhash_v1.pkl'), path('resources/label_to_name.pkl'))
 
         root.geometry("800x340+%d+%d" % (launcher_x , launcher_y))
         root.configure(background="#333")
