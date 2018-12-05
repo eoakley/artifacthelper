@@ -8,9 +8,12 @@ __pycache__/
 
 screen_shot_debugg.png
 make_installer.txt
+custom_grid.npy
+screenshot_draft.png
 
 # Distribution / packaging
 scrape/
+.vscode/
 .Python
 pynsist_pkgs/
 lib/

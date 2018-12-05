@@ -192,6 +192,7 @@ def robustCard(ss, top, bottom, left, right, md, verbose=False):
             if diff < sm:
                 sm = diff
                 best_pred = pred
+                if best_pred == 'Empty Slot': best_pred = 'Empty Card'
             if verbose:
                 print('    >', diff, pred)
     if sm >= 30:
@@ -249,7 +250,8 @@ class ScreenProcessor:
         self.label_to_name = pickle.load(open(label_dict_path, 'rb'))
         self.md = NPModel(self.baseline, self.label_to_name)
         self.card_grid = []
-        self.borders = None
+        self.borders = []
+        self.custom_grid = []
 
     def process_ss(self, ss, verbose=False):
         '''Process a screenshot and returns predictions for cards.
@@ -258,6 +260,11 @@ class ScreenProcessor:
         #uses previously detected card grid if we have one.
         if len(self.card_grid) > 0:
             card_grid, borders = self.card_grid, self.borders
+        elif len(self.custom_grid) > 0:
+            #custom grid(borders) loaded from file, lets get grid and go
+            scaled_borders, borders = self.custom_grid[:3], self.custom_grid[3:]
+            print('\nUsing custom grid with borders:', borders)
+            card_grid = scale_grid(scaled_borders[0], scaled_borders[1], scaled_borders[2])
         else:
             card_grid, borders = get_card_positions(ss, self.game_width, self.game_height, verbose=verbose)
 
@@ -281,11 +288,11 @@ class ScreenProcessor:
         #if detected grid correctly, uses this grid for the rest of the program instance
         if cards.count('Empty Card') != len(cards):
             #at least one image was not empy, so it must have worked.
-            print("It worked! At least one card is not empty.")
+            print("\nIt worked! At least one card is not empty.")
             self.card_grid = card_grid
             self.borders = borders
 
-        print(cards, borders)
+        print(cards, '\n', 'Borders:', borders)
         return cards, scores, card_grid, borders
     
     def process_screen(self):
@@ -305,7 +312,7 @@ class ScreenProcessor:
 if __name__ == "__main__":
     from PIL import Image
     sp = ScreenProcessor('resources/dhash_v1.pkl', 'resources/label_to_name.pkl')
-    ss = Image.open('D:\Google Drive\Jupyter\Artifact\Helper (dev)\ss_1080_2.jpg')
+    ss = Image.open('D:\Google Drive\Jupyter\Artifact\Helper (dev)\ss_med_rez.jpg')
     ss = np.array(ss.convert('RGB'))
 
     print(ss.shape)
