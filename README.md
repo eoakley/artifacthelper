@@ -35,7 +35,9 @@ When you are on a draft card selection screen click the "Launch Overlay" button 
 
 If the program has properly loaded you will notice the Artifact Helper banner on top of the game. (remember that it won't work unless it is on **borderless window** or **windowed** mode).
 
-Whenever you want to see the stats of the cards on display just click the "Scan Cards". After you finished the draft close the overlay window (click on the X on the top-right corner)
+Whenever you want to see the stats of the cards on display just click the "Scan Cards". After you finished the draft close the overlay window (click on the X on the top-right corner).
+
+If you have problems, try the 'Customize Grid' option.
 
 ## How does it work
 
@@ -53,7 +55,6 @@ Tested only on Windows 10.
 
 * Deck tracker
 * Advanced card recomendadion (based on synergy and mana curve)
-* Custom options on the launcher
 
 ## Authors
 
