@@ -164,7 +164,7 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
         #save ss for debugg
         if len(card_grid) > 1:
             save_debugg_screenshot(ss, card_grid, borders)
-            txt += "\nSaved screen_shot_debugg.png \non installation dir."
+            txt += "\nSaved screenshot_debugg.png \non installation dir."
             label_height=160
             label_width=340
             
@@ -185,6 +185,7 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
         for col in range(6):
             #quatro cantos da carta
             top, left, bottom, right = card_grid[row, col, :]
+            card_width = right-left
             
             card_name = fix_dict(cards[row*6+col])
             card_score = scores[row*6+col]
@@ -222,7 +223,8 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
             l = tk.Label(root, text=txt, justify='right', bg='#222', 
                       fg="#DDD", font=("Helvetica 10 bold"), borderwidth=3, relief="solid")
             
-            l.place(anchor='ne', x = left+50, y = top, width=145, height=61)
+            # print(row, col, 'label start x:' ,left+card_width)
+            l.place(anchor='ne', x = left+card_width, y = top, width=145, height=61)
             
             ll.append(l)
 
@@ -428,8 +430,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
 
         if first_time:
             try:
-                #es = fix_dict(get_prices())
-                pass
+                prices = fix_dict(get_prices())
             except:
                 print("Could not get prices. Try again later.")
         

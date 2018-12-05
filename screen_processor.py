@@ -72,7 +72,7 @@ def save_debugg_screenshot(ss, card_grid, borders):
 
     #save screenshot
     ss_img = Image.fromarray(ss)
-    ss_img.save(path('screen_shot_debugg.png'),"PNG")
+    ss_img.save(path('screenshot_debugg.png'),"PNG")
 
 def is_border(arr, verbose=False):
     """New logic to detect borders:

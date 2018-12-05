@@ -2,6 +2,7 @@
 #http://code.activestate.com/recipes/577409-python-tkinter-canvas-rectangle-selection-box/
 from screen_processor import scale_grid
 import numpy as np
+import webbrowser
 import os
 try:
 	import tkinter as tk
@@ -125,8 +126,11 @@ def run_canvas(root, img_path, custom_grid_path):
 
 	b2 = tk.Button(root, text="Save and Return", command=lambda: close_canvas(root, old_geometry, elements), bg='#CCC')
 	b2.place(x = 500, y = 10, width=120, height=40)
+
+	bh = tk.Button(root, text="Help", command=lambda: webbrowser.open_new('https://github.com/eoakley/artifacthelper/blob/master/screenshots/ScreenShot_Help.png'), bg='#CCC')
+	bh.place(x = 500+120+10+120+10, y = 10, width=120, height=40)
 	
-	elements = [canv, b2, b3, rect]
+	elements = [canv, b2, b3, bh, rect]
 
 	# just for fun
 	def cool_design(event):
