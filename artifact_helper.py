@@ -1,4 +1,4 @@
-from screen_processor import ScreenProcessor, numpy_flip, save_debugg_screenshot, grab_artifact
+from screen_processor import ScreenProcessor, numpy_flip, save_debugg_screenshot
 from concurrent.futures import ThreadPoolExecutor
 from artibuff_scrape import Artibuff_Card
 from tier_list_scrape import read_tier_text, Tier_List_Card
@@ -264,7 +264,7 @@ def call_auto_scan(ll, root, screen_width, screen_height, btn_auto_scan):
 def call_run_canvas(root):
     print('Screenshot of the game')
     try:
-        ss = grab_artifact()
+        ss = sp.grab_artifact()
     except:
         print('Could not SS the game.')
 
