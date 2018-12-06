@@ -199,19 +199,6 @@ def robustCard(ss, top, bottom, left, right, md, verbose=False):
         best_pred = 'Empty Card'
     return best_pred, 0, 0, sm
 
-def grab_artifact():
-    #grabs image of the game. new code, does not take full monitor screenshot like before
-    try:
-        hwnd = win32gui.FindWindow(None, 'Artifact')
-    except Exception as e:
-        print(e)
-        print("No window named Artifact. Is the game running?")
-        
-    win32gui.SetForegroundWindow(hwnd)
-    bbox = win32gui.GetWindowRect(hwnd)
-    img = ImageGrab.grab(bbox)
-    return np.array(img)
-
 class ScreenProcessor:
     def __init__(self, model_path, label_dict_path, verbose=False):
         self.baseline = pickle.load(open(model_path, 'rb'))
@@ -220,6 +207,63 @@ class ScreenProcessor:
         self.card_grid = []
         self.borders = []
         self.custom_grid = []
+        self.method = 'first'
+
+    def grab_artifact(self):
+        #grabs image of the game. new code, does not take full monitor screenshot like before
+        try:
+            hwnd = win32gui.FindWindow(None, 'Artifact')
+        except Exception as e:
+            print(e)
+            print("No window named Artifact. Is the game running?")
+        
+        #try first method
+        if self.method == 'first':
+            left, top, right, bot = win32gui.GetClientRect(hwnd)
+            w = right - left
+            h = bot - top
+
+            hwndDC = win32gui.GetWindowDC(hwnd)
+            mfcDC  = win32ui.CreateDCFromHandle(hwndDC)
+            saveDC = mfcDC.CreateCompatibleDC()
+
+            saveBitMap = win32ui.CreateBitmap()
+            saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
+
+            saveDC.SelectObject(saveBitMap)
+
+            result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
+            try:
+                assert result == 1
+            except Exception as e:
+                print(e)
+                print('Grab did not work. Maybe missing depedencies?')
+
+            bmpinfo = saveBitMap.GetInfo()
+            bmpstr = saveBitMap.GetBitmapBits(True)
+
+            im = Image.frombuffer(
+                'RGB',
+                (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
+                bmpstr, 'raw', 'BGRX', 0, 1)
+
+            ss = np.array(im)
+            #if it doesnt work
+            if np.mean(ss) <= 5:
+                self.method = 'second'
+                #go with second method
+                win32gui.SetForegroundWindow(hwnd)
+                bbox = win32gui.GetWindowRect(hwnd)
+                img = ImageGrab.grab(bbox)
+                return np.array(img)
+
+            return ss
+        else:
+            #go with second method
+            win32gui.SetForegroundWindow(hwnd)
+            bbox = win32gui.GetWindowRect(hwnd)
+            img = ImageGrab.grab(bbox)
+            return np.array(img)
 
     def process_ss(self, ss, verbose=False):
         '''Process a screenshot and returns predictions for cards.
@@ -264,7 +308,7 @@ class ScreenProcessor:
         return cards, scores, card_grid, borders
     
     def process_screen(self):
-        ss = grab_artifact()
+        ss = self.grab_artifact()
 
         self.game_width = ss.shape[1]
         self.game_height = ss.shape[0]
