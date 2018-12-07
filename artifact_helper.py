@@ -135,10 +135,6 @@ def auto_hide(ll, root, screen_width, screen_height):
 
 def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False):
     global flag_auto_hide, sp, flag_swap
-    
-    if root.winfo_x() != overlay_x or root.winfo_y() != overlay_y:
-        print('It looks like the overlay was not positioned correctly on initialisation, moving it now.')
-        root.geometry("+%d+%d" % (overlay_x, overlay_y))
 
     #auto hide disabled for now
     #if not flag_auto_hide:
@@ -305,6 +301,12 @@ def OnMotion(root, event):
     root.geometry("+%s+%s" % (x, y))
 
 
+def fix_overlay_position(root):
+    if root.winfo_x() != overlay_x or root.winfo_y() != overlay_y:
+        print('It looks like the overlay was not positioned correctly on initialisation, moving it now.')
+        root.geometry("+%d+%d" % (overlay_x, overlay_y))
+
+
 def swap_window(root, screen_width, screen_height, first_time=False):
     global coisas, flag_swap, flag_auto_hide, label_list, sp, launcher_x , launcher_y, overlay_x, overlay_y, prices, btn_auto_scan
     flag_auto_hide = False
@@ -325,6 +327,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         root.title("Artifact Helper")
         print("Creating overlay with size:", screen_width, screen_height)
         root.geometry("%dx%d+%d+%d" % (screen_width, screen_height, overlay_x,overlay_y))
+        root.after(100, fix_overlay_position, root)
         root.configure(background=bg_color)
         root.lift()
         root.overrideredirect(1) #Remove border        
