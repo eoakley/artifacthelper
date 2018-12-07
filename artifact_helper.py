@@ -186,11 +186,10 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
         for col in range(6):
             #quatro cantos da carta
             top, left, bottom, right = card_grid[row, col, :]
-
             card_name = fix_dict(cards[row*6+col])
             card_score = scores[row*6+col]
 
-            if card_name == 'Empty Slot':
+            if card_name == 'Empty Slot' or card_name == 'Empty Card':
                 continue
 
             try:
@@ -213,9 +212,7 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
             except:
                 price = ''
 
-            if card_name == 'Empty Card':
-                continue
-            elif card_name not in stats.keys():
+            if card_name not in stats.keys():
                 print('Card not found:', card_name)
                 continue
 
