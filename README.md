@@ -2,7 +2,7 @@
 
 A helper for Valve's Artifact draft mode that displays an overlay on individual cards showing stats gathered from [Artibuff](https://www.artibuff.com/), tier lists (default tier list is Hyped's from [DrawTwo](https://drawtwo.gg/hypeds-limited-tier-list)) and custom annotations.
 
-![Artifact Helper showing card tiers, win rates and pick rates](screenshots/ScreenShot2.png)
+![Artifact Helper showing card tiers, win rates and pick rates](screenshots/ScreenShot1.png)
 
 ## Installing
 
