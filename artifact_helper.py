@@ -135,6 +135,10 @@ def auto_hide(ll, root, screen_width, screen_height):
 
 def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False):
     global flag_auto_hide, sp, flag_swap
+    
+    if root.winfo_x() != overlay_x or root.winfo_y() != overlay_y:
+        print('It looks like the overlay was not positioned correctly on initialisation, moving it now.')
+        root.geometry("+%d+%d" % (overlay_x, overlay_y))
 
     #auto hide disabled for now
     #if not flag_auto_hide:
