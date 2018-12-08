@@ -4,6 +4,7 @@ from artibuff_scrape import Artibuff_Card
 from tier_list_scrape import read_tier_text, Tier_List_Card
 from market_scrape import get_prices
 from canvas_selection import run_canvas
+from theme import win_rate_colors, pick_rate_colors, price_colors, tier_colors
 import os
 import sys
 import pickle
@@ -185,48 +186,56 @@ def btnProcessScreen(ll_cur, root, screen_width, screen_height, auto_scan=False)
         for col in range(6):
             #quatro cantos da carta
             top, left, bottom, right = card_grid[row, col, :]
-            card_width = right-left
-            
             card_name = fix_dict(cards[row*6+col])
             card_score = scores[row*6+col]
 
             if card_name == 'Empty Slot' or card_name == 'Empty Card':
                 continue
-                
-            try:
-                wr = stats[card_name]['str']
-            except:
-                wr = ''
 
             try:
-                tier = tiers[card_name]
+                wr = stats[card_name]['win_rate']
             except:
-                tier = ''
+                wr = None
 
             try:
-                price = prices[card_name]['sell_price']
+                pr = stats[card_name]['pick_rate']
+            except:
+                pr = None
+
+            try:
+                tier = str(tiers[card_name])[0]
+            except:
+                tier = '?'
+
+            try:
+                price = str(prices[card_name]['sell_price'])
             except:
                 price = ''
-                
+
             if card_name not in stats.keys():
                 print('Card not found:', card_name)
                 continue
-                
-            elif card_name not in tiers.keys():
-                tier = '?'
-                
-            max_len_name = 20
-            card_name_str = card_name
-            if len(card_name) > max_len_name:
-                card_name_str = card_name[:max_len_name-2] + '..'
-            txt = card_name_str.rjust(20) + '\n' + str(wr).rjust(20) + '\n' + (str(tier)  + ' ' + price).rjust(20)
-            l = tk.Label(root, text=txt, justify='right', bg='#222', 
-                      fg="#DDD", font=("Helvetica 10 bold"), borderwidth=3, relief="solid")
-            
-            # print(row, col, 'label start x:' ,left+card_width)
-            l.place(anchor='ne', x = left+card_width, y = top, width=145, height=61)
-            
-            ll.append(l)
+
+            yy = top + 5
+            lh = 28
+            margin = 5
+
+            def add_label(text, x=None, y=None, anchor='ne', color=None):
+                label = tk.Label(root, text=text, font="Helvetica 11 bold",
+                                 bg='#222', fg=color if color is not None else '#ddd',
+                                 borderwidth=2, relief="solid", padx=4)
+                label.place(anchor=anchor, x=x if x is not None else right - margin, y=y if y is not None else top + margin)
+                ll.append(label)
+
+            if len(tier) > 0:
+                add_label(tier, x=right - margin,  y=top - 15, anchor='e', color=tier_colors[tier[0]])
+
+            add_label('w {:.1f}%'.format(wr), y=yy, color=win_rate_colors[wr])
+            yy += lh
+
+            add_label('p {:.1f}%'.format(pr), y=yy, color=pick_rate_colors[pr])
+            yy += lh
+            add_label('{:s}'.format(price), y=yy, color=price_colors[price])
 
     destroy_list(ll_cur, root)
     for ele in ll:
