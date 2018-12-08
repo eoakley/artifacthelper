@@ -14,11 +14,24 @@ class Tier_List_Card:
     def __str__(self):
         return self.tier + ' (' + self.tier_rank + ') ' + self.custom
             
-def read_tier_text(filename="tier_list.txt"):
+def read_tier_text(filename="tier_list.txt", raw=False):
     tier_dict = {}
-    with open(filename, "r") as ins:
-        for line in ins:
-            if line.startswith("#")==False:
+    if not raw:
+        with open(filename, "r") as ins:
+            for line in ins:
+                if line.startswith("#")==False:
+                    props = line.split(";")
+                    name = props[0].strip()
+                    tier = props[1].strip()
+                    tier_rank = props[2].strip()
+                    custom = props[3].rstrip("\n")
+                    card = Tier_List_Card(name,tier,tier_rank=tier_rank,custom=custom)
+                    tier_dict[name] = card
+                    
+        return tier_dict
+    if raw:
+        for line in filename.decode().split('\n'):
+            if line.startswith("#")==False and len(line)>0:
                 props = line.split(";")
                 name = props[0].strip()
                 tier = props[1].strip()
@@ -26,5 +39,5 @@ def read_tier_text(filename="tier_list.txt"):
                 custom = props[3].rstrip("\n")
                 card = Tier_List_Card(name,tier,tier_rank=tier_rank,custom=custom)
                 tier_dict[name] = card
-                
-    return tier_dict
+                    
+        return tier_dict

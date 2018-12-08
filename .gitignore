@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
+settings.txt
 screenshot_debugg.png
 make_installer.txt
 custom_grid.npy

@@ -15,7 +15,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from mss import mss
 import atexit
-
+from urllib.request import urlopen
 
 path_root = os.path.dirname(sys.modules['__main__'].__file__)
 def path(filename):
@@ -29,6 +29,15 @@ def OpenUrl(opt=''):
         webbrowser.open_new('https://github.com/eoakley/artifacthelper')
 
 def load_pickle(file_name="card_dict.pkl"):
+    if 'http' in file_name:
+        #load pickle from web
+        try:
+            s = urlopen(file_name).read()
+            return pickle.loads(s)
+        except Exception as err:
+            print("Error loading pickle")
+            print(err)
+
     try:
         with open(file_name, 'rb') as handle:
             b = pickle.load(handle)
@@ -46,7 +55,7 @@ def save_settings(settings,filename="settings.txt"):
             line = str(k)+" = "+str(v)+"\n"
             text += line
 
-        with open(filename, "w") as text_file:
+        with open(path(filename), "w") as text_file:
             text_file.write(text)
 
         return True
@@ -63,7 +72,6 @@ def load_settings(filename="settings.txt"):
             'show_win_rate' : True,
             'show_pick_rate' : True,
             'show_price' : True,
-            'flag_auto_scan':False,
             'overlay_x':0,
             'overlay_y':0,
             'launcher_x':'default',
@@ -71,11 +79,11 @@ def load_settings(filename="settings.txt"):
             
     }
     try:
-        if os.path.exists(filename) ==False:
+        if os.path.exists(path(filename)) ==False:
             print("Saving settings for the first time..")
             save_settings(settings,filename=filename)
         else:
-            with open(filename, "r") as ins:
+            with open(path(filename), "r") as ins:
                 for line in ins:
                     if (line.startswith("#")==False) and  ("=" in line):
                             if len(line.split('=')) == 2:
@@ -113,9 +121,10 @@ def fix_dict(d):
     
 executor = ThreadPoolExecutor(40)
 
-stats = fix_dict(load_pickle(path('resources/card_dict.pkl')))
+#loads tier list and pick rates from web, updated constantly
+stats = fix_dict(load_pickle('https://raw.githubusercontent.com/eoakley/artifactscraping/master/card_dict.pkl'))
 
-tiers = fix_dict(read_tier_text(path('tier_list.txt')))
+tiers = fix_dict(read_tier_text(urlopen('https://raw.githubusercontent.com/eoakley/artifactscraping/master/tier_list.txt').read(), raw=True))
 
 #tiers got updated, poor fix for now:
 
@@ -131,13 +140,12 @@ settings = load_settings()
 
 launcher_x, launcher_y =  settings['launcher_x'], settings['launcher_y']
 overlay_x, overlay_y = settings['overlay_x'], settings['overlay_y']
-flag_auto_scan = settings['flag_auto_scan']
 
 x_drag, y_drag = None, None
 
 flag_auto_hide = False
 
-
+flag_auto_scan = False
 
 bg_color = 'magenta'
 
@@ -550,7 +558,7 @@ def swap_window(root, screen_width, screen_height, first_time=False):
 
 def save_settings_on_exit():
     print("Saving and closing")
-    global settings, overlay_x,overlay_y
+    global settings, overlay_x, overlay_y
     settings['overlay_x'] = overlay_x
     settings['overlay_y'] = overlay_x
     save_settings(settings)
