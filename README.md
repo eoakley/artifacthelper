@@ -17,6 +17,8 @@ Run the Artifact Helper executable file and follow the instructions.
 
 * **Artifact running on borderless window or windowed mode**
 
+* **If you are using [Windows scale options](https://imgur.com/a/exmJC79) (zooms text, apps, icons), you need to disable it by right clicking the Artifact Helper shortcut -> Compatibility tab -> [Change high DPI settings](https://imgur.com/a/ljvFDWU) -> check High DPI scaling override and select Application**
+
 ### **Optional** - Running from source
 
 If you have Python 3, you can run Artifact Helper pretty easily.
