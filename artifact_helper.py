@@ -557,10 +557,10 @@ def swap_window(root, screen_width, screen_height, first_time=False):
         flag_swap = 0
 
 def save_settings_on_exit():
-    print("Saving and closing")
     global settings, overlay_x, overlay_y
+
     settings['overlay_x'] = overlay_x
-    settings['overlay_y'] = overlay_x
+    settings['overlay_y'] = overlay_y
     save_settings(settings)
     return True
 
