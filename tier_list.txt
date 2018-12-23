@@ -229,7 +229,7 @@ Golden Ticket;B;9;
 Helm of the Dominator;B;3;
 Hero's Cape;U;14;
 Horn of the Alpha;B;4;
-Jasper Daggers;U;6;
+Jasper Daggers;A;6;
 Keenfolk Musket;C;8;
 Keenfolk Plate;U;7;
 Leather Armor;C;11;
