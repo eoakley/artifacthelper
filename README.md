@@ -6,7 +6,7 @@ A helper for Valve's Artifact draft mode that displays an overlay on individual 
 
 ## Installing
 
-Download latest [release](https://github.com/eoakley/artifacthelper/releases/latest).
+Stay Updated And Download latest [release](https://github.com/eoakley/artifacthelper/releases/latest).
 
 Run the Artifact Helper executable file and follow the instructions.
 
